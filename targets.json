@@ -1,14 +1,7 @@
 {
-    "beton_samara": {
-        "name": "Экономстрой (Бетон Самара)",
-        "url": "https://betonsamara.ru/price-list/",
-        "selectors": {
-            "row": "table tr:has(td)",
-            "name": "td:nth-child(1)",
-            "price": "td:nth-child(2)"
-        },
-        "meta": {
-            "delivery_price_per_m3": 700
-        }
-    }
+  "beton_samara": {
+    "name": "Бетон Самара",
+    "url": "https://betonsamara.ru/price-list/",
+    "parser": "parser_betonsamara"
+  }
 }
