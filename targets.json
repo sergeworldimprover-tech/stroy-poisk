@@ -1,11 +1,14 @@
 {
-    "metal_market": {
-        "name": "Металл-Маркет (Самара)",
-        "url": "https://metal-market.ru/prajs-list/",
+    "beton_samara": {
+        "name": "Экономстрой (Бетон Самара)",
+        "url": "https://betonsamara.ru/price-list/",
         "selectors": {
-            "row": "tr.item_row",
-            "name": "td.name",
-            "price": "td.price"
+            "row": "table tr",
+            "name": "td:first-child",
+            "price": "td:nth-child(2)"
+        },
+        "meta": {
+            "delivery_price_per_m3": 700
         }
     }
 }
