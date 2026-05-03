@@ -3,8 +3,8 @@
         "name": "Экономстрой (Бетон Самара)",
         "url": "https://betonsamara.ru/price-list/",
         "selectors": {
-            "row": "table tr",
-            "name": "td:first-child",
+            "row": ".price-list table tbody tr",
+            "name": "td:nth-child(1)",
             "price": "td:nth-child(2)"
         },
         "meta": {
