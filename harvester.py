@@ -10,122 +10,92 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import urllib3
 
-# отключаем ошибки SSL (ВАЖНО для твоего сайта)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 TARGETS_FILE = Path("targets.json")
 OUTPUT_FILE = Path("FINAL_DATABASE.json")
 
 HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    )
+"User-Agent": "Mozilla/5.0"
 }
 
-
 def build_session():
-    session = requests.Session()
-
-    retry = Retry(
-        total=3,
-        backoff_factor=1,
-        status_forcelist=[429, 500, 502, 503, 504],
-    )
-
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-
-    return session
-
+session = requests.Session()
+retry = Retry(total=3, backoff_factor=1)
+adapter = HTTPAdapter(max_retries=retry)
+session.mount("http://", adapter)
+session.mount("https://", adapter)
+return session
 
 def normalize_price(text):
-    if not text:
-        return None
-    digits = re.sub(r"\D", "", text)
-    return int(digits) if digits else None
-
+if not text:
+return None
+digits = re.sub(r"\D", "", text)
+return int(digits) if digits else None
 
 def parse(html, selectors, vendor, delivery_price):
-    soup = BeautifulSoup(html, "html.parser")
-    rows = soup.select(selectors["row"])
+soup = BeautifulSoup(html, "html.parser")
+rows = soup.select(selectors["row"])
 
-    items = []
+```
+items = []
 
-    for row in rows:
-        try:
-            name_el = row.select_one(selectors["name"])
-            price_el = row.select_one(selectors["price"])
+for row in rows:
+    try:
+        name = row.select_one(selectors["name"]).get_text(strip=True)
+        price = normalize_price(row.select_one(selectors["price"]).get_text())
 
-            if not name_el or not price_el:
-                continue
-
-            name = name_el.get_text(strip=True)
-            price = normalize_price(price_el.get_text())
-
-            if not name or price is None:
-                continue
-
+        if name and price:
             items.append({
                 "name": name,
                 "price": price,
                 "vendor": vendor,
                 "delivery_price_per_m3": delivery_price
             })
-        except:
-            continue
+    except:
+        continue
 
-    return items
-
+return items
+```
 
 def run():
+with open(TARGETS_FILE, "r", encoding="utf-8-sig") as f:
+targets = json.load(f)
+
+```
+session = build_session()
+final_db = []
+
+for key, info in targets.items():
+    print(f"\n📡 Парсим: {info['name']}")
+
     try:
-        with open(TARGETS_FILE, "r", encoding="utf-8-sig") as f:
-            targets = json.load(f)
+        r = session.get(info["url"], headers=HEADERS, timeout=20, verify=False)
+
+        if r.status_code != 200:
+            print("Ошибка:", r.status_code)
+            continue
+
+        items = parse(
+            r.text,
+            info["selectors"],
+            info["name"],
+            info.get("meta", {}).get("delivery_price_per_m3")
+        )
+
+        print("✅ Найдено:", len(items))
+        final_db.extend(items)
+
     except Exception as e:
-        print("Ошибка targets.json:", e)
-        return
+        print("❌ Ошибка:", e)
 
-    session = build_session()
-    final_db = []
+    time.sleep(random.uniform(1, 2))
 
-    for key, info in targets.items():
-        print(f"\n📡 Парсим: {info['name']}")
+with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    json.dump(final_db, f, ensure_ascii=False, indent=2)
 
-        try:
-            response = session.get(
-                info["url"],
-                headers=HEADERS,
-                timeout=20,
-                verify=False  # <-- ключевой фикс
-            )
+print("\n💎 Готово:", len(final_db))
+```
 
-            if response.status_code != 200:
-                print("Ошибка доступа:", response.status_code)
-                continue
-
-            items = parse(
-                response.text,
-                info["selectors"],
-                info["name"],
-                info.get("meta", {}).get("delivery_price_per_m3")
-            )
-
-            print(f"✅ Найдено: {len(items)}")
-            final_db.extend(items)
-
-        except Exception as e:
-            print("Ошибка:", e)
-
-        time.sleep(random.uniform(1, 3))
-
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(final_db, f, ensure_ascii=False, indent=2)
-
-    print(f"\n💎 Готово. Всего товаров: {len(final_db)}")
-
-
-if __name__ == "__main__":
-    run()
+if **name** == "**main**":
+run()
