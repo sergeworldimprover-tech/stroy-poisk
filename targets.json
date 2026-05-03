@@ -9,14 +9,14 @@
         }
     },
     "beton_samara": {
-        "name": "Бетон-Сервис (Самара)",
-        "url": "https://beton-samara.ru/prajs-list/",
-        "selectors": {
-            "row": "tr",
-            "name": "td.name",
-            "price": "td.price"
-        }
-    },
+    "name": "Бетон-Сервис (Самара)",
+    "url": "https://betonsamara.ru/",
+    "selectors": {
+        "row": "tr",
+        "name": "td.name",
+        "price": "td.price"
+    }
+},
     "magistral": {
         "name": "ГК Магистраль (Самара)",
         "url": "https://magistral-samara.ru/prajs-list/",
