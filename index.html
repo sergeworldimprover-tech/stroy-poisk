@@ -1,0 +1,343 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>StroyPoisk63 PRO — ФИНАЛЬНЫЙ РЕЛИЗ 1.0</title>
+  <style>
+    :root {
+      --bg: #0b0c10; 
+      --card: #1f2833; 
+      --text: #c5c6c7;
+      --accent: #66fcf1; 
+      --success: #45a29e; 
+      --gray: #8e8e93;
+      --border: #2a3440; 
+      --header-bg: #1f2833;
+      --calc-btn: #2a3440;
+    }
+
+    body.light-theme {
+      --bg: #ffffff; --card: #f2f2f7; --text: #000000;
+      --border: #c7c7cc; --header-bg: #ffffff;
+      --accent: #007aff;
+      --calc-btn: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      padding-bottom: 80px; transition: background 0.3s;
+    }
+
+    header {
+      background: var(--header-bg); padding: 10px 16px;
+      border-bottom: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 1000;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    
+    .logo-img { 
+      width: 45px; height: 45px; 
+      border-radius: 50%; 
+      border: 2px solid var(--accent); 
+      box-shadow: 0 0 10px var(--accent);
+      background: #000; object-fit: cover; flex-shrink: 0; 
+    }
+    
+    .logo-text { font-size: 16px; font-weight: 900; line-height: 1.1; }
+    .logo-text span { color: var(--accent); }
+    .logo-text small { display: block; font-size: 9px; color: var(--success); text-transform: uppercase; letter-spacing: 1.5px; }
+
+    .theme-toggle {
+      background: none; border: 1.5px solid var(--accent); color: var(--accent);
+      border-radius: 50%; width: 35px; height: 35px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .page { display: none; padding: 12px; max-width: 1200px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    .search-wrapper { position: relative; width: 100%; margin: 10px 0; }
+    .search-input {
+      width: 100%; background: var(--card); border: 1px solid var(--border);
+      padding: 14px; border-radius: 12px; color: var(--text); font-size: 16px; outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+
+    #suggestions {
+      position: absolute; background: var(--card); width: 100%; 
+      z-index: 1001; border-radius: 0 0 12px 12px; overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid var(--border);
+      border-top: none; max-height: 200px; overflow-y: auto;
+    }
+    .suggestion-item {
+      padding: 12px 15px; cursor: pointer; color: var(--accent);
+      border-bottom: 1px solid var(--border); font-size: 14px;
+    }
+    .suggestion-item:hover { background: var(--border); }
+
+    #adsList, #favsList { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 768px) { #adsList, #favsList { grid-template-columns: 1fr 1fr; } }
+
+    .card {
+      background: var(--card); border-radius: 12px; padding: 16px;
+      border: 1px solid var(--border); border-left: 4px solid var(--accent);
+      position: relative;
+    }
+    .card-ksr { font-size: 10px; color: var(--accent); font-family: monospace; margin-bottom: 4px; }
+    .card-title { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 12px; line-height: 1.3; }
+
+    .price-entry {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-top: 1px solid var(--border);
+    }
+    .vendor-info { font-size: 13px; color: var(--text); }
+    .price-val { font-size: 15px; color: var(--accent); font-weight: 900; }
+    
+    .btn-calc-trigger {
+      background: var(--calc-btn); color: var(--accent); border: 1px solid var(--accent);
+      border-radius: 8px; width: 32px; height: 32px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; margin-left: 10px;
+    }
+
+    .card-footer {
+      margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border);
+      font-size: 9px; color: var(--gray); text-align: right;
+    }
+
+    .fav-btn { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 22px; cursor: pointer; }
+
+    .modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9); z-index: 2000; display: none;
+      flex-direction: column; padding: 20px; justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: var(--card); border: 2px solid var(--accent);
+      padding: 25px; border-radius: 16px; width: 100%; max-width: 400px;
+    }
+
+    nav { 
+      position: fixed; bottom: 0; left: 0; right: 0; 
+      background: var(--header-bg); border-top: 1px solid var(--border); 
+      display: flex; padding: 10px 0; z-index: 1000; 
+    }
+    .nav-item { flex: 1; text-align: center; color: var(--gray); font-size: 10px; background: none; border: none; font-weight: bold; cursor: pointer; }
+    .nav-item.active { color: var(--accent); }
+    .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+    .btn-tg {
+      background: #2AABEE; color: #fff; text-decoration: none;
+      padding: 12px; border-radius: 10px; font-weight: bold;
+      display: inline-block; width: 100%; margin-top: 15px; text-align: center;
+    }
+  </style>
+</head>
+<body class="dark-theme">
+
+<header>
+  <div class="header-left">
+    <img src="img/logo_final_mondoshawan.png" class="logo-img" alt="SP63 PRO">
+    <div class="logo-text">Stroy<span>Poisk</span>63<small>СКРИПА РЯДОМ</small></div>
+  </div>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
+</header>
+
+<div class="page active" id="page-ads">
+  <div class="search-wrapper">
+    <input class="search-input" type="text" id="searchInput" placeholder="Поиск (название или КСР)..." autocomplete="off" />
+    <div id="suggestions"></div>
+  </div>
+  <div id="adsList"></div>
+</div>
+
+<div class="page" id="page-favs">
+  <h2 style="padding: 15px; color: var(--accent); font-size: 18px;">ИЗБРАННОЕ</h2>
+  <div id="favsList"></div>
+</div>
+
+<div id="calcModal" class="modal">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <span style="font-weight: 900; color: var(--accent);">КАЛЬКУЛЯТОР</span>
+      <button onclick="closeModal('calcModal')" style="background:none; border:none; color:var(--text); font-size: 30px;">×</button>
+    </div>
+    <div id="calcDisplay" style="background: #000; border: 1px solid var(--accent); padding: 15px; border-radius: 10px; text-align: right; font-size: 28px; font-weight: 900; margin-bottom: 15px; color: var(--accent); min-height: 60px;">0</div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; color: #ff4d4d; text-align: center;" onclick="cClear()">C</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('/')">÷</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('*')">×</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cBack()">⌫</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('7')">7</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('8')">8</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('9')">9</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('-')">-</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('4')">4</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('5')">5</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('6')">6</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('+')">+</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('1')">1</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('2')">2</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; text-align: center;" onclick="cInput('3')">3</div>
+      <div style="background: var(--accent); color: #000; border-radius: 10px; font-weight: bold; padding: 15px 5px; cursor: pointer; text-align: center; grid-column: span 2; grid-row: span 2; display: flex; align-items: center; justify-content: center;" onclick="cResult()">=</div>
+      <div style="background: var(--calc-btn); border: 1px solid var(--border); border-radius: 10px; padding: 15px 5px; cursor: pointer; grid-column: span 2; text-align: center;" onclick="cInput('0')">0</div>
+    </div>
+  </div>
+</div>
+
+<div id="cabinetModal" class="modal">
+  <div class="modal-content">
+    <div style="text-align: right;"><button onclick="closeModal('cabinetModal')" style="background:none; border:none; color:var(--text); font-size: 30px;">×</button></div>
+    <h2 style="color: var(--accent); margin-bottom: 10px; text-align: center;">Личный кабинет</h2>
+    <p style="font-size: 14px; text-align: center;">Заявки и связь с менеджером:</p>
+    <a href="https://t.me/StroyPoisk63_bot" target="_blank" class="btn-tg">ОТКРЫТЬ ТЕЛЕГРАМ</a>
+  </div>
+</div>
+
+<nav>
+  <button class="nav-item active" onclick="showPage('ads', this)"><span class="nav-icon">🔍</span>ПОИСК</button>
+  <button class="nav-item" onclick="showPage('favs', this)"><span class="nav-icon">⭐</span>ИЗБРАННОЕ</button>
+  <button class="nav-item" onclick="openCabinet()"><span class="nav-icon">👤</span>КАБИНЕТ</button>
+</nav>
+
+<script>
+  const fullThesaurus = [
+    "Арматура А500С", "Бетон М100", "Бетон М200", "Бетон М300", "Бетон М400", "Кирпич облицовочный", 
+    "Газобетон", "Керамзитоблок", "Песок", "Щебень", "Цемент М500"
+  ];
+
+  let allProducts = [];
+  let favorites = JSON.parse(localStorage.getItem('sp63_favs')) || [];
+
+  const searchInput = document.getElementById('searchInput');
+  const suggestionsBox = document.getElementById('suggestions');
+
+  async function initApp() {
+    try {
+      const res = await fetch('FINAL_DATABASE.json'); 
+      allProducts = await res.json();
+      console.log("StroyPoisk63 PRO: База загружена, товаров:", allProducts.length);
+      updateDisplay(); 
+    } catch (e) {
+      console.error("Критическая ошибка базы:", e);
+      document.getElementById('adsList').innerHTML = '<p style="color:red; text-align:center; padding:20px;">Ошибка загрузки базы</p>';
+    }
+  }
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    suggestionsBox.innerHTML = ''; 
+
+    if (query.length > 0) {
+      const matchedTips = fullThesaurus.filter(t => t.toLowerCase().includes(query)).slice(0, 6);
+      matchedTips.forEach(tip => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.innerText = tip;
+        div.onclick = () => {
+          searchInput.value = tip;
+          suggestionsBox.innerHTML = '';
+          updateDisplay();
+        };
+        suggestionsBox.appendChild(div);
+      });
+    }
+    updateDisplay();
+  });
+
+  function updateDisplay() {
+    const query = searchInput.value.toLowerCase().trim();
+    const filtered = allProducts.filter(item => {
+      const name = (item.name || "").toLowerCase();
+      const vendor = (item.vendor || "").toLowerCase();
+      return name.includes(query) || vendor.includes(query);
+    });
+    render(filtered, 'adsList', query);
+  }
+
+  function render(list, containerId, query) {
+    const container = document.getElementById(containerId);
+    if(!container) return;
+    container.innerHTML = '';
+    
+    if (list.length === 0 && query.length > 0) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:60px; border: 1px dashed var(--accent); border-radius: 12px; margin: 10px;">
+           <p style="font-size:18px; color:var(--accent); font-weight:bold;">Товар скоро появится</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = list.map(p => `
+      <div class="card">
+        <button class="fav-btn" onclick="toggleFav('${p.name}')">
+          ${favorites.includes(p.name) ? '⭐' : '☆'}
+        </button>
+        <div class="card-ksr">КСР: ${p.ksr_code || '---'}</div>
+        <div class="card-title">${p.name}</div>
+        <div class="price-list">
+            <div class="price-entry">
+              <div class="vendor-info">${p.vendor || 'Поставщик'}</div>
+              <div style="display: flex; align-items: center;">
+                <div class="price-val">${formatPrice(p.price)}</div>
+                <button class="btn-calc-trigger" onclick="openCalc('${p.price}')">🧮</button>
+              </div>
+            </div>
+        </div>
+        <div class="card-footer">Обновлено: ${p.updateDate || '---'}</div>
+      </div>
+    `).join('');
+  }
+
+  function formatPrice(val) {
+    if (!val || val === "Уточняется") return "Уточнить";
+    const num = parseFloat(String(val).replace(',', '.').replace(/\s/g, ''));
+    return isNaN(num) ? val : num.toLocaleString('ru-RU') + ' ₽';
+  }
+
+  function toggleFav(name) {
+    favorites = favorites.includes(name) ? favorites.filter(f => f !== name) : [...favorites, name];
+    localStorage.setItem('sp63_favs', JSON.stringify(favorites));
+    showPage(document.querySelector('.nav-item.active').innerText.includes('ПОИСК') ? 'ads' : 'favs', null);
+  }
+
+  function showPage(pageId, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + pageId).classList.add('active');
+    if(btn) btn.classList.add('active');
+    if(pageId === 'favs') {
+      const favData = allProducts.filter(i => favorites.includes(i.name));
+      render(favData, 'favsList', '');
+    } else {
+      updateDisplay();
+    }
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    document.getElementById('themeBtn').textContent = document.body.classList.contains('light-theme') ? '☀️' : '🌙';
+  }
+
+  function openCabinet() { document.getElementById('cabinetModal').style.display = 'flex'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+  const d = document.getElementById('calcDisplay');
+  function openCalc(price) { 
+    let cleanPrice = String(price).replace(',', '.').replace(/\s/g, '');
+    d.innerText = (!isNaN(parseFloat(cleanPrice))) ? cleanPrice : '0';
+    document.getElementById('calcModal').style.display = 'flex'; 
+  }
+  function cInput(v) { if(d.innerText === '0' && v !== '.') d.innerText = v; else d.innerText += v; }
+  function cClear() { d.innerText = '0'; }
+  function cBack() { d.innerText = d.innerText.slice(0, -1) || '0'; }
+  function cResult() { try { d.innerText = eval(d.innerText.replace('×', '*').replace('÷', '/')); } catch { d.innerText = 'Ошибка'; } }
+
+  initApp();
+</script>
+</body>
+</html>
