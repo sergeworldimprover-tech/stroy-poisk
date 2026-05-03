@@ -7,32 +7,5 @@
             "name": "td.name",
             "price": "td.price"
         }
-    },
-    "beton_samara": {
-    "name": "Бетон-Сервис (Самара)",
-    "url": "https://betonsamara.ru/",
-    "selectors": {
-        "row": "tr",
-        "name": "td.name",
-        "price": "td.price"
-    }
-},
-    "magistral": {
-        "name": "ГК Магистраль (Самара)",
-        "url": "https://magistral-samara.ru/prajs-list/",
-        "selectors": {
-            "row": "tr",
-            "name": "td:nth-child(1)",
-            "price": "td:nth-child(3)"
-        }
-    },
-    "metal_city": {
-        "name": "Металл-Сити (Самара)",
-        "url": "https://metal-city63.ru/prices/",
-        "selectors": {
-            "row": "tr",
-            "name": "td:nth-child(1)",
-            "price": "td:nth-child(2)"
-        }
     }
 }
