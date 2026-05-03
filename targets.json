@@ -1,7 +1,6 @@
 {
   "beton_samara": {
     "name": "Бетон Самара",
-    "url": "https://betonsamara.ru/price-list/",
     "parser": "parser_betonsamara"
   }
 }
